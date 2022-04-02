@@ -92,16 +92,23 @@ export default class SudokuGame extends React.Component {
     updateCompletion() {
         const board = this.state.board;
         if (!this.isFilled()) {
-            return false;
+            this.setState({
+                complete: false,
+            });
+            return;
         }
         const violations = SudokuUtils.validateBoard(board, EMPTY, NUM_SQUARES, SQUARE_SIZE);
-        return violations.rowViolations.size === 0 && violations.columnViolations.size === 0
-            && violations.squareViolations.size === 0;
+        const violationsExist = (violations.rowViolations.size !== 0 || violations.columnViolations.size !== 0
+            || violations.squareViolations.size !== 0)
+        this.setState({
+            complete: !violationsExist,
+        });
+
     }
 
     renderSquareWithCells(cells) {
         return (
-            <div className="board-square">
+            <div className="board-square" key={cells[0].key}>
                 {cells}
             </div>
         );
@@ -151,13 +158,7 @@ export default class SudokuGame extends React.Component {
     }
 
     createBoard() {
-        const board = [];
-        for (let i = 0; i < SIZE; i++) {
-            board.push([]);
-            for (let j = 0; j < SIZE; j++) {
-                board[i].push("");
-            }
-        }
+        const board = SudokuUtils.fillBoard(NUM_SQUARES, SQUARE_SIZE);
         return board;
     }
 
