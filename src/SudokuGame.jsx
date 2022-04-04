@@ -216,7 +216,7 @@ export default class SudokuGame extends React.Component {
                     <br/>
                     <button onClick={() => this.solve()}>Solve</button>
                     <button onClick={() => this.step()}>Step</button>
-                    <button onClick={() => this.reset()}>New game</button>
+                <button onClick={() => this.reset()}>New game</button>
                 </div>
             </div>
         );

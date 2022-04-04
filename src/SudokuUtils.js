@@ -116,11 +116,17 @@ const removeUntilUnsolvable = function(board, numSquares, squareSize) {
     const size = numSquares * squareSize;
     const boardFull = copyBoard(board);
     let lastSolvable = copyBoard(board);
-    const allCells = new Array(size * size).fill().map((_, i) => [Math.floor(i / size), i % size])
-        .filter(cell => board[cell[0]][cell[1]] !== '.');
     while (solvable) {
         let solved = false;
         board = copyBoard(lastSolvable);
+        const allCells = [];
+        for (let i = 0; i < size; i++) {
+            for (let j = 0; j < size; j++) {
+                if (board[i][j] !== '.') {
+                 allCells.push([i, j]);
+                }
+            }
+        }
         while (allCells.length > 0 && !solved) {
             const randomIndex = Math.floor(Math.random() * allCells.length);
             const [row, col] = allCells[randomIndex];

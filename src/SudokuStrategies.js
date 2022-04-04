@@ -50,6 +50,9 @@ class Board {
     }
 
     getPossibleNumbers(row, col) {
+        if (this.board[row][col] !== '.') {
+            return new Set();
+        }
         return new Set(this.validNumbers.filter(num => !this.numbersInUnits[row].has(num) &&
                 !this.numbersInUnits[this.size + col].has(num) &&
                 !this.numbersInUnits[2 * this.size + this.getSquareIndex(row, col)].has(num)));
@@ -114,9 +117,6 @@ const cantBeAnywhereElseInUnit = function(board) {
 
     for (let i = 0; i < board.size; i++) {
         for (let j = 0; j < board.size; j++) {
-            if (board.board[i][j] !== '.') {
-                continue;
-            }
             const possible = possibleNumbers[i][j];
             for (let num of possible) {
                 const units = [board.rowUnits[i], board.columnUnits[j], board.squareUnits[board.getSquareIndex(i, j)]];
