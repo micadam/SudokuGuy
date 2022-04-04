@@ -114,11 +114,11 @@ const copyBoard = function(board) {
 const removeUntilUnsolvable = function(board, numSquares, squareSize) {
     let solvable = true;
     const size = numSquares * squareSize;
-    const boardCopy = copyBoard(board);
+    const boardFull = copyBoard(board);
     let lastSolvable = copyBoard(board);
-    const allCells = new Array(size * size).fill().map((_, i) => [Math.floor(i / size), i % size]);
+    const allCells = new Array(size * size).fill().map((_, i) => [Math.floor(i / size), i % size])
+        .filter(cell => board[cell[0]][cell[1]] !== '.');
     while (solvable) {
-        // array of row, column pairs
         let solved = false;
         board = copyBoard(lastSolvable);
         while (allCells.length > 0 && !solved) {
@@ -127,7 +127,7 @@ const removeUntilUnsolvable = function(board, numSquares, squareSize) {
             board[row][col] = '.';
             allCells.splice(randomIndex, 1);
             let newBoard = SudokuStrategies.solve(board, numSquares, squareSize);
-            solved = boardsEqual(boardCopy, newBoard);
+            solved = boardsEqual(boardFull, newBoard);
         }
         if (solved) {
             lastSolvable = copyBoard(board);

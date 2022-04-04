@@ -11,11 +11,14 @@ export default class SudokuCell extends React.Component{
         return (
             <div className={className}>
                 <div className="content">
-                    <input
-                        type="text"
-                        value={this.props.value === "." ? "" : this.props.value}
-                        onChange={this.props.onChange}
-                    />
+                    { this.props.modifiable ?
+                        <input
+                            type="text"
+                            value={this.props.value === "." ? "" : this.props.value}
+                            onChange={this.props.onChange}
+                        /> :
+                        <span>{this.props.value}</span>
+                    }
                 </div>
             </div>
         );
@@ -27,4 +30,5 @@ SudokuCell.propTypes = {
     onChange: PropTypes.func.isRequired,
     isValid: PropTypes.bool.isRequired,
     isComplete: PropTypes.bool.isRequired,
+    modifiable: PropTypes.bool.isRequired,
 }

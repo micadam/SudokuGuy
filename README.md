@@ -3,7 +3,9 @@
 This is an app I'm developing to teach myself how to solve difficult Sudoku puzzles.
 
 What it does currently:
-* generate sudoku board solvable solely by looking at each cell and filling it in if there's only one possibility
+* generate sudoku board solvable with the following strategies:
+* * look at each cell and fill it in if only one number is possible
+* * look at each cell and fill it in if one of its possible numbers is possible nowhere else in one of its units
 * automatically check for mistakes (optionally)
 * automatically mark the puzzle as complete
 

@@ -25,15 +25,22 @@ export default class SudokuGame extends React.Component {
         const board = this.createBoard();
         this.state = {
             board: board,
+            modifiable: board.map(row => row.map(cell => cell === EMPTY)),
             autocheck: true,
             violations: EMPTY_VIOLATIONS,
             complete: false,
+            focus: `-1,-1`,
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleAutoCheckChange = this.handleAutoCheckChange.bind(this);
+        this.updateExtras = this.updateExtras.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this);
     }
 
     updateViolations() {
+        if (!this.state.autocheck) {
+            return;
+        }
         const violations = SudokuUtils.validateBoard(this.state.board, EMPTY, numSquares, squareSize);
         this.setState({
             violations: violations,
@@ -43,7 +50,7 @@ export default class SudokuGame extends React.Component {
     handleChange(row, column, event) {
         let value;
         if (event.nativeEvent.inputType === "deleteContentBackward") {
-            value = "";
+            value = EMPTY;
         } else {
             value = event.target.value[event.target.value.length - 1]
         }
@@ -57,10 +64,27 @@ export default class SudokuGame extends React.Component {
         this.setState({
             board: board,
         });
-        if (this.state.autocheck) {
-            this.updateViolations();
-        }
+        this.updateViolations();
         this.updateCompletion();
+    }
+
+    handleKeyDown(event, row, column) {
+        const directions = {
+            ArrowUp: [-1, 0],
+            ArrowDown: [1, 0],
+            ArrowLeft: [0, -1],
+            ArrowRight: [0, 1],
+        }
+        const direction = directions[event.key];
+        if (!direction) {
+            return;
+        }
+        const [dx, dy] = direction;
+        const newRow = (row + SIZE + dx) % SIZE;
+        const newColumn = (column + SIZE + dy) % SIZE;
+        this.setState({
+            focus: `${newRow},${newColumn}`,
+        });
     }
 
     handleAutoCheckChange(event) {
@@ -115,14 +139,17 @@ export default class SudokuGame extends React.Component {
         );
     }
 
-    solve() {
-        const board = this.state.board;
-        const solvedBoard = SudokuStrategies.solve(board, numSquares, squareSize);
-        this.setState({
-            board: solvedBoard,
-        });
+    updateExtras() {
         this.updateViolations();
         this.updateCompletion();
+    }
+
+    solve() {
+        const board = this.state.board;
+        const solvedBoard = SudokuStrategies.solve(board, numSquares, squareSize, true);
+        this.setState({
+            board: solvedBoard,
+        }, this.updateExtras);
     }
 
     step() {
@@ -130,10 +157,19 @@ export default class SudokuGame extends React.Component {
         const solvedBoard = SudokuStrategies.step(board, numSquares, squareSize);
         this.setState({
             board: solvedBoard,
-        });
-        this.updateViolations();
-        this.updateCompletion();
+        }, this.updateExtras);
     }
+
+    reset() {
+        const board = this.createBoard();
+        this.setState({
+            board: board,
+            modifiable: board.map(row => row.map(cell => cell === EMPTY)),
+            violations: EMPTY_VIOLATIONS,
+            complete: false,
+        });
+    }
+
 
 
     render() {
@@ -157,6 +193,9 @@ export default class SudokuGame extends React.Component {
                                 isValid={!rowViolations.has(row) && !columnViolations.has(column)
                                     && !squareViolations.has(squareIndex)}
                                 isComplete={complete}
+                                modifiable={this.state.modifiable[row][column]}
+                                focus={this.state.focus === `${row}-${column}`}
+                                onKeyDown={(event) => this.handleKeyDown(event, row, column)}
                             />
                         );
                     }
@@ -174,8 +213,10 @@ export default class SudokuGame extends React.Component {
                 <div className="sudoku-controls">
                     <input type="checkbox" checked={this.state.autocheck} onChange={this.handleAutoCheckChange} />
                     <label>Auto-check</label>
+                    <br/>
                     <button onClick={() => this.solve()}>Solve</button>
                     <button onClick={() => this.step()}>Step</button>
+                    <button onClick={() => this.reset()}>New game</button>
                 </div>
             </div>
         );
