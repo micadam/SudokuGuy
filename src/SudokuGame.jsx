@@ -2,12 +2,13 @@ import React  from "react";
 import SudokuCell from "./SudokuCell";
 
 import * as SudokuUtils from "./SudokuUtils";
+import * as SudokuStrategies from "./SudokuStrategies";
 
 import "./SudokuGame.css";
 
-const SQUARE_SIZE = 3;
-const NUM_SQUARES = 3;
-const SIZE = SQUARE_SIZE * NUM_SQUARES;
+const squareSize = 3;
+const numSquares = 3;
+const SIZE = squareSize * numSquares;
 const EMPTY_SET = new Set();
 const EMPTY_VIOLATIONS = {
     rowViolations: EMPTY_SET,
@@ -15,7 +16,7 @@ const EMPTY_VIOLATIONS = {
     squareViolations: EMPTY_SET
 }
 
-const EMPTY = "";
+const EMPTY = ".";
 const ALLOWED_VALUES = [EMPTY, "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 export default class SudokuGame extends React.Component {
@@ -33,7 +34,7 @@ export default class SudokuGame extends React.Component {
     }
 
     updateViolations() {
-        const violations = SudokuUtils.validateBoard(this.state.board, EMPTY, NUM_SQUARES, SQUARE_SIZE);
+        const violations = SudokuUtils.validateBoard(this.state.board, EMPTY, numSquares, squareSize);
         this.setState({
             violations: violations,
         });
@@ -67,7 +68,7 @@ export default class SudokuGame extends React.Component {
         console.log(value);
         let violations;
         if (value) {
-            violations = SudokuUtils.validateBoard(this.state.board, EMPTY, NUM_SQUARES, SQUARE_SIZE);
+            violations = SudokuUtils.validateBoard(this.state.board, EMPTY, numSquares, squareSize);
         } else {
             violations = EMPTY_VIOLATIONS;
         }
@@ -97,7 +98,7 @@ export default class SudokuGame extends React.Component {
             });
             return;
         }
-        const violations = SudokuUtils.validateBoard(board, EMPTY, NUM_SQUARES, SQUARE_SIZE);
+        const violations = SudokuUtils.validateBoard(board, EMPTY, numSquares, squareSize);
         const violationsExist = (violations.rowViolations.size !== 0 || violations.columnViolations.size !== 0
             || violations.squareViolations.size !== 0)
         this.setState({
@@ -114,20 +115,40 @@ export default class SudokuGame extends React.Component {
         );
     }
 
+    solve() {
+        const board = this.state.board;
+        const solvedBoard = SudokuStrategies.solve(board, numSquares, squareSize);
+        this.setState({
+            board: solvedBoard,
+        });
+        this.updateViolations();
+        this.updateCompletion();
+    }
+
+    step() {
+        const board = this.state.board;
+        const solvedBoard = SudokuStrategies.step(board, numSquares, squareSize);
+        this.setState({
+            board: solvedBoard,
+        });
+        this.updateViolations();
+        this.updateCompletion();
+    }
+
 
     render() {
         const board = this.state.board;
         const {rowViolations, columnViolations, squareViolations} = this.state.violations;
         const complete = this.state.complete;
         const squares = []
-        for (let i = 0; i < NUM_SQUARES; i++) {
-            for (let j = 0; j < NUM_SQUARES; j++) {
+        for (let i = 0; i < numSquares; i++) {
+            for (let j = 0; j < numSquares; j++) {
                 const cellsInSquare = [];
-                for (let k = 0; k < SQUARE_SIZE; k++) {
-                    for (let l = 0; l < SQUARE_SIZE; l++) {
-                        const row = i * SQUARE_SIZE + k;
-                        const column = j * SQUARE_SIZE + l;
-                        const squareIndex = i * NUM_SQUARES + j;
+                for (let k = 0; k < squareSize; k++) {
+                    for (let l = 0; l < squareSize; l++) {
+                        const row = i * squareSize + k;
+                        const column = j * squareSize + l;
+                        const squareIndex = i * numSquares + j;
                         cellsInSquare.push(
                             <SudokuCell
                                 key={`${row}-${column}`}
@@ -144,6 +165,7 @@ export default class SudokuGame extends React.Component {
             }
         }
         // should contain a checkbox for enabling/disabling autocheck
+        // should contain a button to solve the board
         return (
             <div className="sudoku-game">
                 <div className="sudoku-board">
@@ -152,13 +174,16 @@ export default class SudokuGame extends React.Component {
                 <div className="sudoku-controls">
                     <input type="checkbox" checked={this.state.autocheck} onChange={this.handleAutoCheckChange} />
                     <label>Auto-check</label>
+                    <button onClick={() => this.solve()}>Solve</button>
+                    <button onClick={() => this.step()}>Step</button>
                 </div>
             </div>
         );
     }
 
     createBoard() {
-        const board = SudokuUtils.fillBoard(NUM_SQUARES, SQUARE_SIZE);
+        let board = SudokuUtils.fillBoard(numSquares, squareSize);
+        board = SudokuUtils.removeUntilUnsolvable(board, numSquares, squareSize);
         return board;
     }
 

@@ -13,7 +13,7 @@ export default class SudokuCell extends React.Component{
                 <div className="content">
                     <input
                         type="text"
-                        value={this.props.value}
+                        value={this.props.value === "." ? "" : this.props.value}
                         onChange={this.props.onChange}
                     />
                 </div>
@@ -23,7 +23,7 @@ export default class SudokuCell extends React.Component{
 }
 
 SudokuCell.propTypes = {
-    value: PropTypes.oneOf(["", "1", "2", "3", "4", "5", "6", "7", "8", "9"]).isRequired,
+    value: PropTypes.oneOf([".", "", "1", "2", "3", "4", "5", "6", "7", "8", "9"]).isRequired,
     onChange: PropTypes.func.isRequired,
     isValid: PropTypes.bool.isRequired,
     isComplete: PropTypes.bool.isRequired,
