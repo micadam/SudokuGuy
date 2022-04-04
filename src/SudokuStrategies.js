@@ -119,17 +119,17 @@ const cantBeAnywhereElseInUnit = function(board) {
             }
             const possible = possibleNumbers[i][j];
             for (let num of possible) {
-                const unitGroups = [board.rowUnits[i], board.columnUnits[j], board.squareUnits[board.getSquareIndex(i, j)]];
-                for (let unitGroup of unitGroups) {
-                    for (let unit of unitGroup) {
-                        let numInUnit = 0;
-                        const [row, col] = stringToCell(unit);
+                const units = [board.rowUnits[i], board.columnUnits[j], board.squareUnits[board.getSquareIndex(i, j)]];
+                for (let unit of units) {
+                    let numInUnit = 0;
+                    for (let cellStr of unit) {
+                        const [row, col] = stringToCell(cellStr);
                         if (possibleNumbers[row][col].has(num)) {
                             numInUnit++;
                         }
-                        if (numInUnit === 1) {
-                            moves.push(Move.str(i, j, num, source));
-                        }
+                    }
+                    if (numInUnit === 1) {
+                        moves.push(Move.str(i, j, num, source));
                     }
                 }
             }
