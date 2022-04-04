@@ -35,11 +35,14 @@ class Board {
                 }
             }
         }
-        this.numbersInUnits = new Array(3 * this.size).fill(0).map(() => new Set());
-        for (let i = 0; i < this.allUnits.length; i++) {
-            for (let unit of this.allUnits[i]) {
-                let [row, col] = stringToCell(unit);
-                this.numbersInUnits[i].add(this.board[row][col]);
+        this.missingFromUnits = new Array(3 * this.size).fill(0).map(() => new Set(this.validNumbers));
+        for (let idx of this.allUnits.keys()) {
+            for (let cell of this.allUnits[idx]) {
+                let [row, col] = stringToCell(cell);
+                if (this.board[row][col] === '.') {
+                    continue;
+                }
+                this.missingFromUnits[idx].delete(this.board[row][col]);
             }
         }
         this.allUnits = [...this.rowUnits, ...this.columnUnits, ...this.squareUnits];
@@ -53,17 +56,17 @@ class Board {
         if (this.board[row][col] !== '.') {
             return new Set();
         }
-        return new Set(this.validNumbers.filter(num => !this.numbersInUnits[row].has(num) &&
-                !this.numbersInUnits[this.size + col].has(num) &&
-                !this.numbersInUnits[2 * this.size + this.getSquareIndex(row, col)].has(num)));
+        return new Set(this.validNumbers.filter(num => this.missingFromUnits[row].has(num) &&
+                this.missingFromUnits[this.size + col].has(num) &&
+                this.missingFromUnits[2 * this.size + this.getSquareIndex(row, col)].has(num)));
         }
 
     placeNumber(row, col, number) {
         const squareIndex = Math.floor(row / this.squareSize) * this.numSquares + Math.floor(col / this.squareSize);
         this.board[row][col] = number;
-        this.numbersInUnits[row].add(number);
-        this.numbersInUnits[this.size + col].add(number);
-        this.numbersInUnits[2 * this.size + squareIndex].add(number);
+        this.missingFromUnits[row].delete(number);
+        this.missingFromUnits[this.size + col].delete(number);
+        this.missingFromUnits[2 * this.size + squareIndex].delete(number);
     }
 }
 
@@ -114,6 +117,47 @@ const cantBeAnywhereElseInUnit = function(board) {
     const source = "cantBeAnywhereElseInUnit";
     const moves = [];
     const possibleNumbers = board.board.map((row, i) => row.map((_, j) => board.getPossibleNumbers(i, j)));
+
+    for (let idx of board.allUnits.keys()) {
+        const unit = board.allUnits[idx];
+        for (let num of board.missingFromUnits[idx]) {
+            const possibleCells = [...unit].filter(cell => {
+                const [row, col] = stringToCell(cell);
+                return possibleNumbers[row][col].has(num);
+            });
+            const unitIdxes = possibleCells.map(cell => {
+                const [row, col] = stringToCell(cell);
+                return [row, col, board.getSquareIndex(row, col)];
+            });
+            const rows = new Set(unitIdxes.map(idx => idx[0]));
+            const cols = new Set(unitIdxes.map(idx => idx[1]));
+            const squares = new Set(unitIdxes.map(idx => idx[2]));
+            if (rows.size === 1) {
+                board.rowUnits[[...rows][0]].forEach(cell => {
+                    if (!unit.has(cell)) {
+                        const [row, col] = stringToCell(cell);
+                        possibleNumbers[row][col].delete(num);
+                    }
+                });
+            }
+            if (cols.size === 1) {
+               board.columnUnits[[...cols][0]].forEach(cell => {
+                    if (!unit.has(cell)) {
+                        const [row, col] = stringToCell(cell);
+                        possibleNumbers[row][col].delete(num);
+                    }
+                });
+            }
+            if (squares.size === 1) {
+                board.squareUnits[[...squares][0]].forEach(cell => {
+                    if (!unit.has(cell)) {
+                        const [row, col] = stringToCell(cell);
+                        possibleNumbers[row][col].delete(num);
+                    }
+                });
+            }
+        }
+    }
 
     for (let i = 0; i < board.size; i++) {
         for (let j = 0; j < board.size; j++) {

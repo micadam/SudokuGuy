@@ -100,6 +100,7 @@ const boardsEqual = function(board, board2) {
         }
         for (let j = 0; j < board[i].length; j++) {
             if (board[i][j] !== board2[i][j]) {
+                console.log(`${board[i][j]} !== ${board2[i][j]}`);
                 return false;
             }
         }
@@ -116,7 +117,10 @@ const removeUntilUnsolvable = function(board, numSquares, squareSize) {
     const size = numSquares * squareSize;
     const boardFull = copyBoard(board);
     let lastSolvable = copyBoard(board);
+    let attempt = 0;
     while (solvable) {
+        attempt++;
+        console.log(`Attempt ${attempt}`);
         let solved = false;
         board = copyBoard(lastSolvable);
         const allCells = [];
@@ -128,8 +132,9 @@ const removeUntilUnsolvable = function(board, numSquares, squareSize) {
             }
         }
         while (allCells.length > 0 && !solved) {
-            const randomIndex = Math.floor(Math.random() * allCells.length);
+            const randomIndex = 0;
             const [row, col] = allCells[randomIndex];
+            console.log(`Removing ${row}, ${col}, value ${board[row][col]}`);
             board[row][col] = '.';
             allCells.splice(randomIndex, 1);
             let newBoard = SudokuStrategies.solve(board, numSquares, squareSize);
