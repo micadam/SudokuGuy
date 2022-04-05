@@ -226,8 +226,19 @@ export default class SudokuGame extends React.Component {
     }
 
     createBoard() {
-        let board = SudokuUtils.fillBoard(numSquares, squareSize);
-        board = SudokuUtils.removeUntilUnsolvable(board, numSquares, squareSize);
+        let board = [
+            [EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, '4', EMPTY, '5', EMPTY, '9', EMPTY, '1', EMPTY],
+            ['9', EMPTY, EMPTY, '1', '2', '3', EMPTY, EMPTY, '8'],
+            [EMPTY, EMPTY, EMPTY, EMPTY, '5', EMPTY, EMPTY, EMPTY, EMPTY],
+            [EMPTY, '7', EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, '4', EMPTY],
+            [EMPTY, EMPTY, '1', EMPTY, '8', EMPTY, '9', EMPTY, EMPTY],
+            ['4', EMPTY, EMPTY, '7', EMPTY, '8', EMPTY, EMPTY, '5'],
+            [EMPTY, '1', '2', EMPTY, EMPTY, EMPTY, '3', '8', EMPTY],
+            [EMPTY, EMPTY, EMPTY, EMPTY, '6', EMPTY, EMPTY, EMPTY, EMPTY],
+        ];
+        // let board = SudokuUtils.fillBoard(numSquares, squareSize);
+        // board = SudokuUtils.removeUntilUnsolvable(board, numSquares, squareSize);
         return board;
     }
 

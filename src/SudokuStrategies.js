@@ -183,11 +183,14 @@ const eliminateCrossUnit = function(board, possibleNumbers) {
     }
 }
 
-
 const SudokuStrategies = [
     oneMissingFromUnit,
     cantBeAnywhereElseInUnit,
 ];
+
+const logMove = function(move, log=true) {
+    console.log(`${move.source}: Place ${move.value} at ${move.row},${move.col}`);
+}
 
 const solve = function(rawBoard, numSquares, squareSize, log=false) {
     if (log) {
@@ -205,9 +208,7 @@ const solve = function(rawBoard, numSquares, squareSize, log=false) {
             if (moves.length > 0) {
                 const randomIndex = Math.floor(Math.random() * moves.length);
                 const move = Move.fromString(moves[randomIndex]);
-                if (log) {
-                    console.log(`${move.source}: ${Move.str(move.row, move.col, move.value)}`);
-                }
+                logMove(move, log);
                 board.placeNumber(move.row, move.col, move.value);
                 moveMade = true;
                 numMissingSquares--;
@@ -220,10 +221,12 @@ const solve = function(rawBoard, numSquares, squareSize, log=false) {
 
 const step = function(rawBoard, numSquares, squareSize) {
     const board = new Board(rawBoard, numSquares, squareSize);
+    let possibleNumbers = board.board.map((row, i) => row.map((_, j) => board.getPossibleNumbers(i, j)));
     for (let strategy of SudokuStrategies) {
-        const moves = strategy(board, numSquares, squareSize);
+        const moves = strategy(board, possibleNumbers);
         if (moves.length > 0) {
             const move = Move.fromString(moves[Math.floor(Math.random() * moves.length)]);
+            logMove(move);
             board.placeNumber(move.row, move.col, move.value);
             break;
         }
