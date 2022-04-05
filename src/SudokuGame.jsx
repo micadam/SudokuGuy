@@ -173,6 +173,9 @@ export default class SudokuGame extends React.Component {
 
 
     render() {
+        if (!this.state.board) {
+            return <div>Generating board...</div>
+        }
         const board = this.state.board;
         const {rowViolations, columnViolations, squareViolations} = this.state.violations;
         const complete = this.state.complete;

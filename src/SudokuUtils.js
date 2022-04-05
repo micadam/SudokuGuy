@@ -100,7 +100,6 @@ const boardsEqual = function(board, board2) {
         }
         for (let j = 0; j < board[i].length; j++) {
             if (board[i][j] !== board2[i][j]) {
-                console.log(`${board[i][j]} !== ${board2[i][j]}`);
                 return false;
             }
         }
@@ -115,30 +114,22 @@ const copyBoard = function(board) {
 const removeUntilUnsolvable = function(board, numSquares, squareSize) {
     let solvable = true;
     const size = numSquares * squareSize;
-    const boardFull = copyBoard(board);
+    const fullBoard = copyBoard(board);
     let lastSolvable = copyBoard(board);
-    let attempt = 0;
+    const allCells = new Array(size * size).fill(0).map((_, i) => [Math.floor(i / size), i % size]);
     while (solvable) {
-        attempt++;
-        console.log(`Attempt ${attempt}`);
         let solved = false;
-        board = copyBoard(lastSolvable);
-        const allCells = [];
-        for (let i = 0; i < size; i++) {
-            for (let j = 0; j < size; j++) {
-                if (board[i][j] !== '.') {
-                 allCells.push([i, j]);
-                }
-            }
-        }
         while (allCells.length > 0 && !solved) {
-            const randomIndex = 0;
+            const randomIndex = Math.floor(Math.random() * allCells.length);
             const [row, col] = allCells[randomIndex];
-            console.log(`Removing ${row}, ${col}, value ${board[row][col]}`);
+            const oldValue = board[row][col];
             board[row][col] = '.';
             allCells.splice(randomIndex, 1);
             let newBoard = SudokuStrategies.solve(board, numSquares, squareSize);
-            solved = boardsEqual(boardFull, newBoard);
+            solved = boardsEqual(fullBoard, newBoard);
+            if (!solved) {
+                board[row][col] = oldValue;
+            }
         }
         if (solved) {
             lastSolvable = copyBoard(board);
@@ -146,7 +137,6 @@ const removeUntilUnsolvable = function(board, numSquares, squareSize) {
             solvable = false;
         }
     }
-    console.log(lastSolvable);
     return lastSolvable;
 }
 

@@ -11,7 +11,7 @@ export default class SudokuCell extends React.Component{
         return (
             <div className={className}>
                 <div className="content">
-                    { this.props.modifiable ?
+                    {this.props.modifiable ?
                         <input
                             type="text"
                             value={this.props.value === "." ? "" : this.props.value}

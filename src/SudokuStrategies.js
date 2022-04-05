@@ -92,7 +92,7 @@ class Move {
  * A Sudoku strategy that looks at each cell in turn, and checks if it legally can
  * only be one number. If so, it will fill in that number.
  */
-const oneMissingFromUnit = function(board) {
+const oneMissingFromUnit = function(board, possibleNumbers) {
     const source = "oneMissingFromUnit";
     const moves = [];
     for (let i = 0; i < board.size; i++) {
@@ -100,9 +100,9 @@ const oneMissingFromUnit = function(board) {
             if (board.board[i][j] !== '.') {
                 continue;
             }
-            const possibleNumbers = board.getPossibleNumbers(i, j);
-            if (possibleNumbers.size === 1) {
-                moves.push(Move.str(i, j, [...possibleNumbers][0], source));
+            const possible = possibleNumbers[i][j];
+            if (possible.size === 1) {
+                moves.push(Move.str(i, j, [...possible][0], source));
             }
         }
     }
@@ -113,11 +113,34 @@ const oneMissingFromUnit = function(board) {
  * A sudoku strategy that for each cell, for each possible number there, checks if
  * it is the only possible cell for that number in that unit.
  */
-const cantBeAnywhereElseInUnit = function(board) {
+const cantBeAnywhereElseInUnit = function(board, possibleNumbers) {
     const source = "cantBeAnywhereElseInUnit";
     const moves = [];
-    const possibleNumbers = board.board.map((row, i) => row.map((_, j) => board.getPossibleNumbers(i, j)));
 
+    for (let i = 0; i < board.size; i++) {
+        for (let j = 0; j < board.size; j++) {
+            const possible = possibleNumbers[i][j];
+            for (let num of possible) {
+                const units = [board.rowUnits[i], board.columnUnits[j], board.squareUnits[board.getSquareIndex(i, j)]];
+                for (let unit of units) {
+                    let numInUnit = 0;
+                    for (let cellStr of unit) {
+                        const [row, col] = stringToCell(cellStr);
+                        if (possibleNumbers[row][col].has(num)) {
+                            numInUnit++;
+                        }
+                    }
+                    if (numInUnit === 1) {
+                        moves.push(Move.str(i, j, num, source));
+                    }
+                }
+            }
+        }
+    }
+    return moves;
+}
+
+const eliminateCrossUnit = function(board, possibleNumbers) {
     for (let idx of board.allUnits.keys()) {
         const unit = board.allUnits[idx];
         for (let num of board.missingFromUnits[idx]) {
@@ -158,28 +181,6 @@ const cantBeAnywhereElseInUnit = function(board) {
             }
         }
     }
-
-    for (let i = 0; i < board.size; i++) {
-        for (let j = 0; j < board.size; j++) {
-            const possible = possibleNumbers[i][j];
-            for (let num of possible) {
-                const units = [board.rowUnits[i], board.columnUnits[j], board.squareUnits[board.getSquareIndex(i, j)]];
-                for (let unit of units) {
-                    let numInUnit = 0;
-                    for (let cellStr of unit) {
-                        const [row, col] = stringToCell(cellStr);
-                        if (possibleNumbers[row][col].has(num)) {
-                            numInUnit++;
-                        }
-                    }
-                    if (numInUnit === 1) {
-                        moves.push(Move.str(i, j, num, source));
-                    }
-                }
-            }
-        }
-    }
-    return moves;
 }
 
 
@@ -197,8 +198,10 @@ const solve = function(rawBoard, numSquares, squareSize, log=false) {
     let moveMade = true;
     while (moveMade && numMissingSquares > 0) {
         moveMade = false;
+        let possibleNumbers = board.board.map((row, i) => row.map((_, j) => board.getPossibleNumbers(i, j)));
+        eliminateCrossUnit(board, possibleNumbers);
         for (let strategy of SudokuStrategies) {
-            const moves = strategy(board, numSquares, squareSize);
+            const moves = strategy(board, possibleNumbers);
             if (moves.length > 0) {
                 const randomIndex = Math.floor(Math.random() * moves.length);
                 const move = Move.fromString(moves[randomIndex]);
